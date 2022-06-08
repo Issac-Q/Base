@@ -26,6 +26,12 @@
 //7. message->handler->messageQueue
 //8. thread->run->Looper.loop->msg.handler.handlerMessage
 
+class MessageHandler
+{
+public:
+    virtual void handleMessage(Message* msg);    
+};
+
 class Message
 {
 public:
@@ -44,6 +50,8 @@ public:
 
     Message* mNext;      //implement signal linked list
     uint64_t mWhen;      //time to handle
+
+    MessageHandler* mHandler;
 
 private:
     int mType;

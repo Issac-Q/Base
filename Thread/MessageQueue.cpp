@@ -20,14 +20,7 @@ MessageQueue::~MessageQueue()
         mHead = next;
     }
     pthread_mutex_destroy(&mMutex);
-    pthread_cond_destroy(&mCond);    
-}
-
-void MessageQueue::setMaxSize(uint64_t maxSize)
-{
-    if (maxSize != 0) {
-        mMaxSize = maxSize;
-    }
+    pthread_cond_destroy(&mCond);
 }
 
 void MessageQueue::pushMessage(Message* msg, uint64_t when)
@@ -36,6 +29,11 @@ void MessageQueue::pushMessage(Message* msg, uint64_t when)
         printf("MessageQueue::pushMessage invalid operattion:you pushed a NULL message\n");
         return;
     }
+
+    if (!msg->mHandler) {
+        printf("MessageQueue::pushMessage invalid operattion:you pushed a message with NULL handler\n");
+        return;
+    }    
 
     msg->mWhen = when;
     pthread_mutex_lock(&mMutex);
@@ -123,4 +121,11 @@ Message* MessageQueue::popMessage()
     }
     pthread_mutex_unlock(&mMutex);
     return retMessage;
+}
+
+void MessageQueue::quit()
+{
+    pthread_mutex_lock(&mMutex);
+    pthread_cond_broadcast(&mCond);
+    pthread_mutex_unlock(&mMutex);
 }

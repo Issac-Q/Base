@@ -21,6 +21,7 @@ public:
     void setMaxSize(uint64_t maxSize);
     void pushMessage(Message* msg, uint64_t when);
     Message* popMessage();
+    void quit();
 
 private:
     Message* mHead;
