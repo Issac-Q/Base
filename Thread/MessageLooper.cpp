@@ -1,31 +1,53 @@
 #include "MessageLooper.h"
 
 MessageLooper::MessageLooper()
-: mQueue()
+: mOwnerId(0)
+, mQueue()
 {
 
 }
 
-MessageQueue* MessageLooper::queue()
+void MessageLooper::setOwner(pthread_t tid)
 {
-    return &mQueue;
+    mOwnerId = tid;
+}
+
+void MessageLooper::setQueue(std::shared_ptr<MessageQueue>* queue)
+{
+    if (queue) {
+        mQueue = *queue;
+    }
+}
+
+std::shared_ptr<MessageQueue>* MessageLooper::queue()
+{
+    if (mQueue) {
+        return &mQueue;
+    }
+    else {
+        return NULL;
+    }
 }
 
 void MessageLooper::loop()
 {
-    for (;;) {
-        Message* msg = mQueue.popMessage();
-        if (!msg) {
-            //means quit loop
-            return;
+    if (mQueue) {
+        for (;;) {
+            Message* msg = mQueue->popMessage();
+            if (!msg) {
+                //means quit loop
+                return;
+            }
+            msg->mHandler->handleMessage(msg);
+            //todo 回收message
+            delete msg;
         }
-        msg->mHandler->handleMessage(msg);
-        //todo 回收message
-        delete msg;
     }
 }
 
 void MessageLooper::quit()
 {
-    mQueue.quit();
+    if (mQueue) {
+        mQueue->quitPop(mOwnerId);
+    }
 }

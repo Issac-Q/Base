@@ -21,19 +21,28 @@ public:
     void setMaxSize(uint64_t maxSize);
     void pushMessage(Message* msg, uint64_t when);
     Message* popMessage();
-    void quit();
+    //quit push thread specified by tid
+    void quitPush(pthread_t tid);
+    //quit pop thread  specified by tid
+    void quitPop(pthread_t tid);
 
 private:
     Message* mHead;
     Message* mTail;  //optimization insert message
 
     pthread_mutex_t mMutex;
-    pthread_cond_t mCond;
+    pthread_cond_t mPushCond;
+    pthread_cond_t mPopCond;
 
     uint64_t mCachedSize;
     uint64_t mMaxSize;
     uint32_t mWaitPushThreads;
     uint32_t mWaitPopThreads;
+
+    bool mQuitPush;
+    pthread_t mQuitPushTid;
+    bool mQuitPop;
+    pthread_t mQuitPopTid;
 };
 
 

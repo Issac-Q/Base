@@ -1,6 +1,7 @@
 #ifndef MESSAGE_LOOPER_H
 #define MESSAGE_LOOPER_H
 
+#include <memory>
 #include "MessageQueue.h"
 
 class MessageLooper
@@ -8,12 +9,15 @@ class MessageLooper
 public:
     MessageLooper();
 
-    MessageQueue* queue();
+    void setOwner(pthread_t tid)
+    void setQueue(std::shared_ptr<MessageQueue>* queue);
+    std::shared_ptr<MessageQueue>* queue();
     void loop();
     void quit();
     
 private:
-    MessageQueue mQueue;
+    pthread_t mOwnerId;
+    std::shared_ptr<MessageQueue> mQueue;
 };
 
 #endif

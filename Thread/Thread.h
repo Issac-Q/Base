@@ -12,6 +12,7 @@ public:
 	virtual ~Thread();
 
     bool startThread(const char *name = NULL);
+    //caution to call!!!
     //you need stop when terminate other thread
     //you must make sure the cancel point
     bool terminate();
