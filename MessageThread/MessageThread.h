@@ -10,11 +10,9 @@ public:
     MeesageThread();
     ~MeesageThread();
 
-    // MessageLooper* looper();
     bool stopThread();
 
 protected:
-    // virtual void preRun();
     virtual void run();
 
 private:
