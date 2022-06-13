@@ -13,7 +13,7 @@ MessageLooper::MessageLooper()
 
 void MessageLooper::setQueue(std::shared_ptr<MessageQueue>* queue)
 {
-    if (queue) {
+    if (!mQueue && queue) {
         mQueue = *queue;
     }
 }
@@ -32,7 +32,10 @@ void MessageLooper::beginLoop()
 void MessageLooper::attach()
 {
     if (!pthread_getspecific(sKey)) {
-        pthread_setspecific(sKey, new MessageLooper());
+        MessageLooper* looper = new MessageLooper();
+        std::shared_ptr<MessageQueue> queue(new MessageQueue());
+        looper->setQueue(&queue);
+        pthread_setspecific(sKey, looper);
     }
 }
 
