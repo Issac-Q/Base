@@ -31,10 +31,9 @@ void MessageLooper::beginLoop()
 /*****static start*****/
 void MessageLooper::attach()
 {
-    if (!pthread_getspecific(sKey)) {
-        MessageLooper* looper = new MessageLooper();
+    if (!pthread_getspecific(sKey)) {        
         std::shared_ptr<MessageQueue> queue(new MessageQueue());
-        looper->setQueue(&queue);
+        MessageLooper* looper = new MessageLooper(&queue);
         pthread_setspecific(sKey, looper);
     }
 }
@@ -64,7 +63,7 @@ void MessageLooper::loop()
             if (!msg->recycle()) {
                 delete msg;
                 msg = NULL;                
-            }            
+            }       
         }
     }
 }
