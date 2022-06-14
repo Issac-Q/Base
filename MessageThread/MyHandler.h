@@ -6,17 +6,18 @@
 class MyHandler : public MessageHandler
 {
 public:
-    MyHandler()
-    : MyHandler(NULL)
-    {
+    DECLARE_CONSTRUCTOR(MyHandler)
+    // MyHandler()
+    // : MyHandler(NULL)
+    // {
 
-    };
+    // };
 
-    MyHandler(MessageLooper* looper)
-     : MessageLooper(looper) 
-    {
+    // MyHandler(MessageLooper* looper)
+    //  : MessageHandler(looper) 
+    // {
 
-    };
+    // };
 
 protected:
     virtual void onHandleMessage(Message* msg);
