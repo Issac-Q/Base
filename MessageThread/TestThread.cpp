@@ -17,8 +17,13 @@ TestThread::~TestThread()
 
 bool TestThread::startThread(const char *name)
 {
-    myHandler = new MyHandler();
+    // myHandler = new MyHandler();
     Thread::startThread(name);
+}
+
+void TestThread::preRun()
+{
+    myHandler = new MyHandler(MessageLooper::mainLooper());
 }
 
 void TestThread::run()

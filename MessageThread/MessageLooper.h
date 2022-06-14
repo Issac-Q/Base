@@ -16,6 +16,7 @@ public:
     static void attach();
     static void attachMainLooper();
     static MessageLooper* looper();
+    static MessageLooper* mainLooper();
 
     void setQueue(std::shared_ptr<MessageQueue>* queue);
     std::shared_ptr<MessageQueue>* queue();

@@ -48,7 +48,7 @@ void MessageLooper::attach()
 
 void MessageLooper::attachMainLooper()
 {    
-    sRWLock.rdlock(); 
+    sRWLock.rdlock();
     bool toAttach = !sMainLooper;
     sRWLock.unlock();
 
@@ -63,6 +63,14 @@ void MessageLooper::attachMainLooper()
 MessageLooper* MessageLooper::looper()
 {
     return (MessageLooper*)sThreadLocal.get();
+}
+
+MessageLooper* MessageLooper::mainLooper()
+{
+    sRWLock.rdlock();
+    MessageLooper* looper = sMainLooper;
+    sRWLock.unlock();
+    return looper;
 }
 /*****static end*****/
 
