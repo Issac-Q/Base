@@ -13,6 +13,7 @@ public:
     bool startThread(const char *name = NULL);
 
 protected:
+    virtual void preRun();
     virtual void run();
 
     MessageHandler *myHandler;
