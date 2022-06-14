@@ -7,6 +7,19 @@
 
 class MessageLooper;
 
+#define DECLARE_CONSTRUCTOR(className) \
+    className()\
+    : className(NULL)\
+    {\
+\
+    };\
+\
+    className(MessageLooper* looper)\
+     : MessageHandler(looper) \
+    {\
+\
+    };
+
 class MessageHandler {
 public:
     MessageHandler();
