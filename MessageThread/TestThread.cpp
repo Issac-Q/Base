@@ -1,5 +1,6 @@
 #include "TestThread.h"
 #include "Log.h"
+#include "MessageLooper.h"
 
 TestThread::TestThread()
 : myHandler(NULL)
