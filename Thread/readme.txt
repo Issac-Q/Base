@@ -10,3 +10,8 @@
 2. 线程自己调用thread_exit(),任意位置退出线程,退出是调用clean up handler
 3. 在取消点响应cancel退出线程,可以认为唤醒并调用thread_exit()
 4. exit会导致进程退出, 主线程执行return也是一样的效果
+
+
+//内存check工具                             //可不加                //可执行程序
+valgrind --tool=memcheck --leak-check=full --show-leak-kinds=all ./Message
+in use at exit: 72,704 bytes in 1 blocks    //C++标准库有自己的内存池,在程序退出后释放空间导致的问题?

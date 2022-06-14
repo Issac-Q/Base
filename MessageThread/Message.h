@@ -1,8 +1,9 @@
 #ifndef MESSAGE_H
 #define MESSAGE_H
 
-#include <mutex>
-#include "BasicDefine.h"
+#include <pthread.h>
+#include <inttypes.h>
+#include "Log.h"
 
 //为了避免在线程函数的循环里面switch case的处理消息
 //将这个功能下放到一个listener中
@@ -35,7 +36,7 @@ public:
     Message();
     Message(int type);
     Message(int type, int arg1, int arg2);
-    Message(int type, int arg1, int arg2, const void* customdata);
+    Message(int type, int arg1, int arg2, void* customdata);
     virtual ~Message();
 
     int type() { return mType; };
@@ -56,9 +57,49 @@ public:
     void *mObject;
 
 private:
-    static std::mutex sMutex;
+    class SpinLock 
+    {
+    public:
+        SpinLock()
+        {
+            pthread_spin_init(&spinlock, PTHREAD_PROCESS_PRIVATE);
+        }
+        ~SpinLock()
+        {
+            pthread_spin_destroy(&spinlock);
+        }
+
+        void lock()
+        {
+            pthread_spin_lock(&spinlock);
+        }
+
+        void unlock()
+        {
+            pthread_spin_unlock(&spinlock);
+        }
+    private:
+        pthread_spinlock_t spinlock;
+    };
+    //初始化的时候调用构造函数,程序退出的时候调用析构函数
+    static SpinLock sSpinlock;
+
+    class PoolGC {
+    public:
+        ~PoolGC()
+        {            
+            while(sPool) {
+                printf("~PoolGC\n");
+                Message* next = sPool->mNext;
+                delete sPool;
+                sPool = next;
+            }
+        }
+    };
+
     static Message* sPool;
-    static uint sPoolSize;
+    static PoolGC sPoolGC;
+    static uint64_t sPoolSize;
 };
 
 #endif
