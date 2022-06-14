@@ -5,8 +5,8 @@
 
 class MyHandler : public MessageHandler
 {
-
 protected:
     virtual void onHandleMessage(Message* msg);
-}
+};
+
 #endif

@@ -1,14 +1,27 @@
 #include "MessageLooper.h"
+#include "MessageHandler.h"
 
-{
-    pthread_key_create(&MessageLooper::sKey);
-}
+MessageLooper::ThreadLocal MessageLooper::sThreadLocal;
+MessageLooper::RWLock MessageLooper::sRWLock;
+MessageLooper* MessageLooper::sMainLooper = NULL;
 
 MessageLooper::MessageLooper()
+: MessageLooper(NULL)
+{
+    
+}
+
+MessageLooper::MessageLooper(std::shared_ptr<MessageQueue>* queue)
 : mOwnerId(0)
 , mQueue()
 {
+    printf("MessageLooper::MessageLooper\n");
+    setQueue(queue);
+}
 
+MessageLooper::~MessageLooper()
+{
+    printf("MessageLooper::~MessageLooper\n");
 }
 
 void MessageLooper::setQueue(std::shared_ptr<MessageQueue>* queue)
@@ -23,24 +36,33 @@ std::shared_ptr<MessageQueue>* MessageLooper::queue()
     return &mQueue;
 }
 
-void MessageLooper::beginLoop()
-{
-    mOwnerId = pthread_self();
-}
-
 /*****static start*****/
 void MessageLooper::attach()
 {
-    if (!pthread_getspecific(sKey)) {        
+    if (!sThreadLocal.get()) {
         std::shared_ptr<MessageQueue> queue(new MessageQueue());
         MessageLooper* looper = new MessageLooper(&queue);
-        pthread_setspecific(sKey, looper);
+        sThreadLocal.set(looper);
     }
 }
 
-const MessageLooper* MessageLooper::looper()
+void MessageLooper::attachMainLooper()
+{    
+    sRWLock.rdlock(); 
+    bool toAttach = !sMainLooper;
+    sRWLock.unlock();
+
+    if (toAttach) {
+        attach();
+        sRWLock.wrlock();        
+        sMainLooper = looper();
+        sRWLock.unlock();
+    }   
+}
+
+MessageLooper* MessageLooper::looper()
 {
-    return (MessageLooper*)pthread_getspecific(sKey);
+    return (MessageLooper*)sThreadLocal.get();
 }
 /*****static end*****/
 
@@ -56,13 +78,14 @@ void MessageLooper::loop()
         for (;;) {
             Message* msg = mQueue->popMessage();
             if (!msg) {
+                printf("loop quit\n");
                 return;
             }
             msg->mHandler->handleMessage(msg);
             //try to recycle
             if (!msg->recycle()) {
                 delete msg;
-                msg = NULL;                
+                msg = NULL;
             }       
         }
     }

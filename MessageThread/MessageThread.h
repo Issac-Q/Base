@@ -14,6 +14,7 @@ public:
 
 protected:
     virtual void run();
+    virtual void postRun();
 
 private:
     MessageLooper *mLooper;
