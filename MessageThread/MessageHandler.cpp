@@ -3,14 +3,15 @@
 #include "MessageLooper.h"
 
 MessageHandler::MessageHandler()
+: MessageHandler(MessageLooper::looper())
 {
-    MessageHandler(MessageLooper::looper());
+    
 }
 
-MessageHandler::MessageHandler(const MessageLooper* looper)
+MessageHandler::MessageHandler(MessageLooper* looper)
 {
     if (looper) {
-        mQueue = looper->queue();
+        mQueue = *(looper->queue());
     }
 }
 
@@ -19,14 +20,14 @@ MessageHandler::~MessageHandler()
 
 }
 
-Message* MessageHandler::obtainMessage();
+Message* MessageHandler::obtainMessage()
 {
     return Message::obtain();
 }
 
 void MessageHandler::sendMessage(Message* msg)
 {
-    sendMessageDelayed(msg, 0)
+    sendMessageDelayed(msg, 0);
 }
 
 void MessageHandler::sendMessage(int type)
@@ -45,7 +46,7 @@ void MessageHandler::sendMessage(int type, int arg1, int arg2)
     sendMessage(msg);
 }
 
-void MessageHandler::sendMessage(int type, int arg1, int arg2, const void* object)
+void MessageHandler::sendMessage(int type, int arg1, int arg2, void* object)
 {
     Message* msg = Message::obtain();
     msg->mType = type;

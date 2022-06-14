@@ -20,6 +20,11 @@ void MeesageThread::run()
     }
 }
 
+void MeesageThread::postRun()
+{
+    pthread_exit(0);
+}
+
 bool MeesageThread::stopThread()
 {
     if (mLooper) {

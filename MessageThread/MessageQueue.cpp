@@ -1,4 +1,5 @@
 #include "MessageQueue.h"
+#include "Log.h"
 
 MessageQueue::MessageQueue()
 : mHead(NULL)
@@ -10,6 +11,7 @@ MessageQueue::MessageQueue()
 , mQuitPush(false)
 , mQuitPop(false)
 {
+    printf("MessageQueue::MessageQueue()\n");
     pthread_mutex_init(&mMutex, NULL);
     pthread_cond_init(&mPushCond, NULL);
     pthread_cond_init(&mPopCond, NULL);
@@ -17,6 +19,7 @@ MessageQueue::MessageQueue()
 
 MessageQueue::~MessageQueue()
 {
+    printf("MessageQueue::~MessageQueue()\n");
     while (mHead) {
         Message* next = mHead->mNext;
         delete mHead;
@@ -42,7 +45,7 @@ void MessageQueue::pushMessage(Message* msg, uint64_t when)
     msg->mWhen = when;
     pthread_mutex_lock(&mMutex);
     ++mWaitPushThreads;
-    while (mCachedSize == mMaxSize || !mQuitPush) {
+    while (mCachedSize == mMaxSize && !mQuitPush) {
         //1. unlock 2.wake 3. lock
         //虚假唤醒有两种
         //1. 因为系统中断唤醒而不是pthread_cond_signal/brodcast唤醒
@@ -147,11 +150,13 @@ void MessageQueue::quitPush(pthread_t tid)
         return;    
     }
     mQuitPush = true;
-    if (mWaitPushThreads == 1) {
-        pthread_cond_signal(&mPushCond);    //wake at leaest one blocked pop thread
-    }
-    else {
-        pthread_cond_broadcast(&mPushCond); //wake all blocked pop thread
+    if (mWaitPushThreads) {
+        if (mWaitPushThreads == 1) {
+            pthread_cond_signal(&mPushCond);    //wake at leaest one blocked pop thread
+        }
+        else {
+            pthread_cond_broadcast(&mPushCond); //wake all blocked pop thread
+        }
     }
     mQuitPushTid = tid;
     pthread_mutex_unlock(&mMutex);

@@ -10,14 +10,14 @@ class MessageLooper;
 class MessageHandler {
 public:
     MessageHandler();
-    MessageHandler(const MessageLooper* looper);
+    MessageHandler(MessageLooper* looper);
     virtual ~MessageHandler();
 
     Message* obtainMessage();   //Cannot be null
     void sendMessage(Message* msg);
     void sendMessage(int type);
     void sendMessage(int type, int arg1, int arg2);
-    void sendMessage(int type, int arg1, int arg2, const void* customdata);
+    void sendMessage(int type, int arg1, int arg2, void* customdata);
     void sendMessageDelayed(Message* msg, uint64_t delayMillis);
     void handleMessage(Message* msg);
 
