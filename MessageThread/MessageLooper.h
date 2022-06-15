@@ -94,7 +94,9 @@ private:
     };
 
     static MessageLooper* sMainLooper;
-    static RWLock sRWLock;  
+    //在全局静态区的变量会在程序开始的时候调用初构造函数，在结束的时候调用析构函数
+    //这里只是声明
+    static RWLock sRWLock;
 };
 
 #endif

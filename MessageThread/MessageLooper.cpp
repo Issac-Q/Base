@@ -1,6 +1,7 @@
 #include "MessageLooper.h"
 #include "MessageHandler.h"
 
+//C++静态成员变量都要在这里定义（调用构造函数构造）才能使用
 MessageLooper::ThreadLocal MessageLooper::sThreadLocal;
 MessageLooper::RWLock MessageLooper::sRWLock;
 MessageLooper* MessageLooper::sMainLooper = NULL;
