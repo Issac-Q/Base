@@ -15,3 +15,16 @@
 //内存check工具                             //可不加                //可执行程序
 valgrind --tool=memcheck --leak-check=full --show-leak-kinds=all ./Message
 in use at exit: 72,704 bytes in 1 blocks    //C++标准库有自己的内存池,在程序退出后释放空间导致的问题?
+
+
+git 分之管理:
+master ---- home ----- company
+ |          
+ |
+ ---------->create
+ ---------------------->create
+ |            |           |
+ |            |           |
+ |           push         |
+merge<---------           |
+ ------------------->rebase and push(仅仅从master更新分之,不会产生新的提交记录)
