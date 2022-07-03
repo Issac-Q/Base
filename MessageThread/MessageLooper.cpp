@@ -25,12 +25,12 @@ MessageLooper::~MessageLooper()
     printf("MessageLooper::~MessageLooper\n");
 }
 
-void MessageLooper::setQueue(std::shared_ptr<MessageQueue>* queue)
-{
-    if (!mQueue && queue) {
-        mQueue = *queue;
-    }
-}
+// void MessageLooper::setQueue(std::shared_ptr<MessageQueue>* queue)
+// {
+//     if (!mQueue && queue) {
+//         mQueue = *queue;
+//     }
+// }
 
 std::shared_ptr<MessageQueue>* MessageLooper::queue()
 {
@@ -38,11 +38,19 @@ std::shared_ptr<MessageQueue>* MessageLooper::queue()
 }
 
 /*****static start*****/
-void MessageLooper::attach()
+//一个thread必须attach一个looper，但是一个looper可以attach到多个messagequeue
+//实现多消费者
+void MessageLooper::attach(std::shared_ptr<MessageQueue>* queue)
 {
     if (!sThreadLocal.get()) {
-        std::shared_ptr<MessageQueue> queue(new MessageQueue());
-        MessageLooper* looper = new MessageLooper(&queue);
+        MessageLooper* looper;
+        if (queue) {
+            looper =  new MessageLooper(NULL);
+        }
+        else {
+            std::shared_ptr<MessageQueue> queue(new MessageQueue());
+            looper = new MessageLooper(&queue);
+        }
         sThreadLocal.set(looper);
     }
 }
