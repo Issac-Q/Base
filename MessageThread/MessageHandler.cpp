@@ -12,12 +12,16 @@ MessageHandler::MessageHandler(MessageLooper* looper)
 {
     if (looper) {
         mQueue = *(looper->queue());
+        //一个thread可以有多个handler, 一个handler只能跟一个thread联系，多个thread的多个handler可以联系到同一个messagequeue，这就是多生产者
+        mOwnerId = pthread_self();
     }
 }
 
 MessageHandler::~MessageHandler()
 {
-
+    if (mQueue) {
+        mQueue.quitPush()
+    }
 }
 
 Message* MessageHandler::obtainMessage()
