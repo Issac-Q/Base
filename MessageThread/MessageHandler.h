@@ -38,6 +38,7 @@ protected:
     virtual void onHandleMessage(Message* msg) = 0;
 
 private:
+    pthread_t mOwnerId;
     std::shared_ptr<MessageQueue> mQueue;
 };
 

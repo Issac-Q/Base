@@ -13,12 +13,12 @@ public:
     ~MessageLooper();
 
     //attach a looper to the caller thread
-    static void attach();
+    static void attach(std::shared_ptr<MessageQueue>* queue = NULL);
     static void attachMainLooper();
     static MessageLooper* looper();
     static MessageLooper* mainLooper();
 
-    void setQueue(std::shared_ptr<MessageQueue>* queue);
+    // void setQueue(std::shared_ptr<MessageQueue>* queue);
     std::shared_ptr<MessageQueue>* queue();
     void loop();
     void quit();
