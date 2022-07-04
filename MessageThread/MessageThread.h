@@ -10,11 +10,10 @@ public:
     MeesageThread();
     ~MeesageThread();
 
-    bool stopThread();
-
 protected:
     virtual void run();
     virtual void postRun();
+    virtual void onStop();
 
 private:
     MessageLooper *mLooper;

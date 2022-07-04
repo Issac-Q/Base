@@ -6,31 +6,17 @@ MessageLooper::ThreadLocal MessageLooper::sThreadLocal;
 MessageLooper::RWLock MessageLooper::sRWLock;
 MessageLooper* MessageLooper::sMainLooper = NULL;
 
-MessageLooper::MessageLooper()
-: MessageLooper(NULL)
-{
-    
-}
-
 MessageLooper::MessageLooper(std::shared_ptr<MessageQueue>* queue)
 : mOwnerId(0)
-, mQueue()
+, mQueue(*queue)
 {
     printf("MessageLooper::MessageLooper\n");
-    setQueue(queue);
 }
 
 MessageLooper::~MessageLooper()
 {
     printf("MessageLooper::~MessageLooper\n");
 }
-
-// void MessageLooper::setQueue(std::shared_ptr<MessageQueue>* queue)
-// {
-//     if (!mQueue && queue) {
-//         mQueue = *queue;
-//     }
-// }
 
 std::shared_ptr<MessageQueue>* MessageLooper::queue()
 {
@@ -45,11 +31,11 @@ void MessageLooper::attach(std::shared_ptr<MessageQueue>* queue)
     if (!sThreadLocal.get()) {
         MessageLooper* looper;
         if (queue) {
-            looper =  new MessageLooper(NULL);
+            looper =  new MessageLooper(queue);
         }
         else {
-            std::shared_ptr<MessageQueue> queue(new MessageQueue());
-            looper = new MessageLooper(&queue);
+            std::shared_ptr<MessageQueue> newQueue(new MessageQueue());
+            looper = new MessageLooper(&newQueue);
         }
         sThreadLocal.set(looper);
     }
@@ -83,15 +69,10 @@ MessageLooper* MessageLooper::mainLooper()
 }
 /*****static end*****/
 
-void MessageLooper::setOwner(pthread_t tid)
-{
-    mOwnerId = tid;
-}
-
 void MessageLooper::loop()
 {
     if (mQueue) {
-        setOwner(pthread_self());
+        mOwnerId = pthread_self();
         for (;;) {
             Message* msg = mQueue->popMessage();
             if (!msg) {

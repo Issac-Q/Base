@@ -25,6 +25,7 @@ public:
     void quitPush(pthread_t tid);
     //quit pop thread  specified by tid
     void quitPop(pthread_t tid);
+    void detachPop(pthread_t tid);
 
 private:
     Message* mHead;
@@ -41,8 +42,10 @@ private:
 
     bool mQuitPush;
     pthread_t mQuitPushTid;
+    std::vector<pthread_t> mQuitPushTids;
     bool mQuitPop;
     pthread_t mQuitPopTid;
+    std::vector<pthread_t> mQuitPopTids;
 };
 
 

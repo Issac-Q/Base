@@ -1,5 +1,7 @@
 #include "MessageLooper.h"
 #include "TestThread.h"
+#include "SignalThread.h"
+#include <unistd.h>
 
 int main(void)
 {
@@ -9,17 +11,21 @@ int main(void)
     //3. new a handler instance whitin the thread that the message will be handle
     //4. new instance operation must be after the attach
     TestThread t;
-    t.startThread();
+    SignalThread sgt(&t);
+    t.startThread("t1");
+    sgt.startThread("stg1");
     //5. start to loop
     MessageLooper* looper = MessageLooper::looper();
     if (looper) {
         printf("main loop start\n");
-        looper->loop();
+        // looper->loop();
     }
+    sleep(1);
 
     //6. send the message from other threads(t) you needed
+    sgt.stopThread();
 
     //7. send a 0(type == 0) message from thread(t) to quit the loop
-    t.stopThread();
+    //t.stopThread();    
     pthread_exit(0);    //only "pthread_exit" way clean function can be called
 }

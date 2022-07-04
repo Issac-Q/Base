@@ -15,6 +15,8 @@ public:
 protected:
     virtual void preRun();
     virtual void run();
+    virtual void onStop();
+    virtual void onStopped();
 
     MessageHandler *myHandler;
 };

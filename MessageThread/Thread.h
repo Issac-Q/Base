@@ -11,7 +11,7 @@ public:
 	Thread();
 	virtual ~Thread();
 
-    bool startThread(const char *name = NULL);
+    bool startThread(const char *name = NULL);    
     //caution to call!!!
     //you need stop when terminate other thread
     //you must make sure the cancel point
@@ -20,11 +20,14 @@ public:
     bool stopThread();
 
 protected:
+    pthread_t threadID();
+    const char* threadName();    
     void quit();
-    const char* threadName();
     virtual void preRun() {};
     virtual void run() = 0;
 	virtual void postRun() {};
+    virtual void onStop() {};   //wake up if your thread blocked by some possible block call
+    virtual void onStopped(pthread_t tid) {};   //thread exit
 
 private:    
     static void threadProc(void* p);

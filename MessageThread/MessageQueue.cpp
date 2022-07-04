@@ -30,6 +30,11 @@ MessageQueue::~MessageQueue()
     pthread_cond_destroy(&mPopCond);
 }
 
+void MessageQueue::setMaxSize(uint64_t maxSize)
+{
+    mMaxSize = maxSize;
+}
+
 void MessageQueue::pushMessage(Message* msg, uint64_t when)
 {
     if (!msg) {
@@ -45,7 +50,8 @@ void MessageQueue::pushMessage(Message* msg, uint64_t when)
     msg->mWhen = when;
     pthread_mutex_lock(&mMutex);
     ++mWaitPushThreads;
-    while (mCachedSize == mMaxSize && !mQuitPush) {
+    //线程只能一个一个的quit,quit的时候不影响其他线程的生产
+    while (mCachedSize == mMaxSize && (!mQuitPush || mQuitPushTid != pthread_self())) {
         //1. unlock 2.wake 3. lock
         //虚假唤醒有两种
         //1. 因为系统中断唤醒而不是pthread_cond_signal/brodcast唤醒
@@ -55,7 +61,10 @@ void MessageQueue::pushMessage(Message* msg, uint64_t when)
     --mWaitPushThreads;
     //means quit push
     if (mQuitPush && mQuitPushTid == pthread_self()) {
+        mQuitPush = false;
+        pthread_cond_broadcast(&mPushCond); //wake all blocked pop thread
         pthread_mutex_unlock(&mMutex);
+        printf("wake up and exit\n");
         return;
     }
 
@@ -117,6 +126,8 @@ Message* MessageQueue::popMessage()
     //means quit pop
     if (mQuitPop && mQuitPopTid == pthread_self()) {
         retMessage = NULL;
+        mQuitPop = false;
+        pthread_cond_broadcast(&mPopCond); //wake all blocked pop thread
         pthread_mutex_unlock(&mMutex);
         return retMessage;
     }
@@ -145,10 +156,11 @@ Message* MessageQueue::popMessage()
 void MessageQueue::quitPush(pthread_t tid)
 {
     pthread_mutex_lock(&mMutex);
-    if (mQuitPush) {
-        pthread_mutex_unlock(&mMutex);
-        return;    
+    printf("MessageQueue::quitPush1\n");
+    while (mQuitPushTids) {
+        pthread_cond_wait(&mPushCond, &mMutex);
     }
+    printf("MessageQueue::quitPush2\n");
     mQuitPush = true;
     if (mWaitPushThreads) {
         if (mWaitPushThreads == 1) {
@@ -165,9 +177,8 @@ void MessageQueue::quitPush(pthread_t tid)
 void MessageQueue::quitPop(pthread_t tid)
 {
     pthread_mutex_lock(&mMutex);
-    if (mQuitPop) {
-        pthread_mutex_unlock(&mMutex);
-        return;
+    while (mQuitPop) {
+        pthread_cond_wait(&mPopCond, &mMutex);
     }
     mQuitPop = true;
     if (mWaitPopThreads) {

@@ -1,4 +1,5 @@
 #include <sys/time.h>
+#include <assert.h>
 #include "MessageHandler.h"
 #include "MessageLooper.h"
 
@@ -10,18 +11,16 @@ MessageHandler::MessageHandler()
 
 MessageHandler::MessageHandler(MessageLooper* looper)
 {
+    assert(looper);
     if (looper) {
         mQueue = *(looper->queue());
-        //一个thread可以有多个handler, 一个handler只能跟一个thread联系，多个thread的多个handler可以联系到同一个messagequeue，这就是多生产者
-        mOwnerId = pthread_self();
+        mQueue->setMaxSize(2);
     }
 }
 
 MessageHandler::~MessageHandler()
 {
-    if (mQueue) {
-        mQueue.quitPush()
-    }
+
 }
 
 Message* MessageHandler::obtainMessage()
@@ -74,4 +73,18 @@ void MessageHandler::sendMessageDelayed(Message* msg, uint64_t delayMillis)
 void MessageHandler::handleMessage(Message* msg)
 {
     onHandleMessage(msg);
+}
+
+void MessageHandler::quit(pthread_t threadID)
+{
+    if (mQueue) {
+        mQueue->quitPush(threadID);
+    }
+}
+
+void MessageHandler::detach(pthread_t threadID)
+{
+    if (mQueue) {
+        mQueue->detach(threadID);
+    }
 }

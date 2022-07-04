@@ -53,6 +53,11 @@ bool Thread::startThread(const char *name)
     }
 }
 
+pthread_t Thread::threadID()
+{
+    return mTid;
+}
+
 const char* Thread::threadName()
 {
     return mThreadName;
@@ -121,6 +126,9 @@ bool Thread::stopThread()
 
     quit();
 
+    onStop(); 
+
+    pthread_t tid = mTid;
     if (mTid != pthread_self()) {
         int ret = pthread_join(mTid, NULL);
         if (0 == ret) {
@@ -135,6 +143,7 @@ bool Thread::stopThread()
     else {
         exitSelf();
     }
+    onStopped(tid);
 }
 
 void Thread::exitSelf()

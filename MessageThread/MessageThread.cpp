@@ -22,13 +22,13 @@ void MeesageThread::run()
 
 void MeesageThread::postRun()
 {
+    //this exit way to call clean function
     pthread_exit(0);
 }
 
-bool MeesageThread::stopThread()
+void MeesageThread::onStop()
 {
     if (mLooper) {
-        mLooper->quit();
+        mLooper->quit();    //wakeup from block
     }    
-    Thread::stopThread();
 }

@@ -8,7 +8,6 @@
 class MessageLooper
 {
 public:
-    MessageLooper();
     MessageLooper(std::shared_ptr<MessageQueue>* queue);
     ~MessageLooper();
 
@@ -18,13 +17,9 @@ public:
     static MessageLooper* looper();
     static MessageLooper* mainLooper();
 
-    // void setQueue(std::shared_ptr<MessageQueue>* queue);
     std::shared_ptr<MessageQueue>* queue();
     void loop();
     void quit();
-
-private:
-    void setOwner(pthread_t tid);
 
 private:
     pthread_t mOwnerId;
@@ -56,7 +51,7 @@ private:
         {
             printf("clean\n");
             delete (MessageLooper*)looper;
-        }        
+        }
         pthread_key_t key;
     };
 

@@ -19,6 +19,7 @@ set(SRC_LIST
             "${CMAKE_SOURCE_DIR}/MessageQueue.cpp"
             "${CMAKE_SOURCE_DIR}/MessageThread.cpp"
             "${CMAKE_SOURCE_DIR}/TestThread.cpp"
+            "${CMAKE_SOURCE_DIR}/SignalThread.cpp"
             "${CMAKE_SOURCE_DIR}/MyHandler.cpp"
             "${CMAKE_SOURCE_DIR}/Thread.cpp"
             "${CMAKE_SOURCE_DIR}/main.cpp"
