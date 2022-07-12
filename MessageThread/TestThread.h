@@ -16,7 +16,7 @@ protected:
     virtual void preRun();
     virtual void run();
     virtual void onStop();
-    virtual void onStopped();
+    virtual void onStopped(pthread_t tid);
 
     MessageHandler *myHandler;
 };

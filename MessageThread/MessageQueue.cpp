@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "MessageQueue.h"
 #include "Log.h"
 
@@ -8,8 +9,8 @@ MessageQueue::MessageQueue()
 , mMaxSize(UINT64_MAX)
 , mWaitPushThreads(0)
 , mWaitPopThreads(0)
-, mQuitPush(false)
-, mQuitPop(false)
+, mQuitPushTids()
+, mQuitPopTids()
 {
     printf("MessageQueue::MessageQueue()\n");
     pthread_mutex_init(&mMutex, NULL);
@@ -51,17 +52,20 @@ void MessageQueue::pushMessage(Message* msg, uint64_t when)
     pthread_mutex_lock(&mMutex);
     ++mWaitPushThreads;
     //线程只能一个一个的quit,quit的时候不影响其他线程的生产
-    while (mCachedSize == mMaxSize && (!mQuitPush || mQuitPushTid != pthread_self())) {
+    pthread_t currentTid = pthread_self();  //check当前的push thread是否是退出的线程
+    bool quitPush = std::find(mQuitPushTids.begin(), mQuitPushTids.end(), currentTid) != mQuitPushTids.end();
+    printf("quitPush:%d\n", quitPush);
+    while (mCachedSize == mMaxSize && !quitPush) {
         //1. unlock 2.wake 3. lock
         //虚假唤醒有两种
         //1. 因为系统中断唤醒而不是pthread_cond_signal/brodcast唤醒
-        //2. 唤醒到获取锁的的间隙有其他线程区使用了        
+        //2. 唤醒到获取锁的的间隙有其他线程区使用了
         pthread_cond_wait(&mPushCond, &mMutex);
+        quitPush = std::find(mQuitPushTids.begin(), mQuitPushTids.end(), currentTid) != mQuitPushTids.end();
     }
     --mWaitPushThreads;
-    //means quit push
-    if (mQuitPush && mQuitPushTid == pthread_self()) {
-        mQuitPush = false;
+    //means quit push    
+    if (quitPush) {
         pthread_cond_broadcast(&mPushCond); //wake all blocked pop thread
         pthread_mutex_unlock(&mMutex);
         printf("wake up and exit\n");
@@ -117,16 +121,18 @@ Message* MessageQueue::popMessage()
 {
     pthread_mutex_lock(&mMutex);
     ++mWaitPopThreads;
-    while (mCachedSize == 0 && !mQuitPop) {
+    pthread_t currentTid = pthread_self();  //check当前的push thread是否是退出的线程
+    bool quitPop = std::find(mQuitPopTids.begin(), mQuitPopTids.end(), currentTid) != mQuitPopTids.end(); 
+    while (mCachedSize == 0 && !quitPop) {
         //1. unlock 2.wake 3. lock
         pthread_cond_wait(&mPopCond, &mMutex);
+        quitPop = std::find(mQuitPopTids.begin(), mQuitPopTids.end(), currentTid) != mQuitPopTids.end(); 
     }
     --mWaitPopThreads;
     Message* retMessage;
     //means quit pop
-    if (mQuitPop && mQuitPopTid == pthread_self()) {
+    if (quitPop) {
         retMessage = NULL;
-        mQuitPop = false;
         pthread_cond_broadcast(&mPopCond); //wake all blocked pop thread
         pthread_mutex_unlock(&mMutex);
         return retMessage;
@@ -157,11 +163,12 @@ void MessageQueue::quitPush(pthread_t tid)
 {
     pthread_mutex_lock(&mMutex);
     printf("MessageQueue::quitPush1\n");
-    while (mQuitPushTids) {
-        pthread_cond_wait(&mPushCond, &mMutex);
+    if (std::find(mQuitPushTids.begin(), mQuitPushTids.end(), tid) != mQuitPushTids.end()) {
+        pthread_mutex_unlock(&mMutex);
+        return;
     }
+    mQuitPushTids.push_back(tid);
     printf("MessageQueue::quitPush2\n");
-    mQuitPush = true;
     if (mWaitPushThreads) {
         if (mWaitPushThreads == 1) {
             pthread_cond_signal(&mPushCond);    //wake at leaest one blocked pop thread
@@ -170,17 +177,31 @@ void MessageQueue::quitPush(pthread_t tid)
             pthread_cond_broadcast(&mPushCond); //wake all blocked pop thread
         }
     }
-    mQuitPushTid = tid;
+    pthread_mutex_unlock(&mMutex);
+}
+
+void MessageQueue::detachPush(pthread_t tid)
+{
+    pthread_mutex_lock(&mMutex);
+    auto it = std::find(mQuitPushTids.begin(), mQuitPushTids.end(), tid);
+    if (it != mQuitPushTids.end()) {
+        mQuitPushTids.erase(it);
+    }
+    else {
+        printf("Warning detach a none push thread\n");
+    }
     pthread_mutex_unlock(&mMutex);
 }
 
 void MessageQueue::quitPop(pthread_t tid)
 {
     pthread_mutex_lock(&mMutex);
-    while (mQuitPop) {
-        pthread_cond_wait(&mPopCond, &mMutex);
+    printf("MessageQueue::quitPush1\n");
+    if (std::find(mQuitPopTids.begin(), mQuitPopTids.end(), tid) != mQuitPopTids.end()) {
+        pthread_mutex_unlock(&mMutex);
+        return;
     }
-    mQuitPop = true;
+    mQuitPopTids.push_back(tid);
     if (mWaitPopThreads) {
         if (mWaitPopThreads == 1) {
             pthread_cond_signal(&mPopCond);    //wake at leaest one blocked pop thread
@@ -189,6 +210,18 @@ void MessageQueue::quitPop(pthread_t tid)
             pthread_cond_broadcast(&mPopCond); //wake all blocked pop thread
         }
     }
-    mQuitPopTid = tid;
+    pthread_mutex_unlock(&mMutex);
+}
+
+void MessageQueue::detachPop(pthread_t tid)
+{
+    pthread_mutex_lock(&mMutex);
+    auto it = std::find(mQuitPopTids.begin(), mQuitPopTids.end(), tid);
+    if (it != mQuitPopTids.end()) {
+        mQuitPopTids.erase(it);
+    }
+    else {
+        printf("Warning detach a none pop thread\n");
+    }
     pthread_mutex_unlock(&mMutex);
 }

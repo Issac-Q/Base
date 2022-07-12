@@ -1,6 +1,7 @@
 #ifndef MESSAGE_QUEUE_H
 #define MESSAGE_QUEUE_H
 
+#include <vector>
 #include <inttypes.h>
 #include <pthread.h>
 #include "Message.h"
@@ -23,6 +24,8 @@ public:
     Message* popMessage();
     //quit push thread specified by tid
     void quitPush(pthread_t tid);
+    //detach thread after it exit
+    void detachPush(pthread_t tid);
     //quit pop thread  specified by tid
     void quitPop(pthread_t tid);
     void detachPop(pthread_t tid);
@@ -40,11 +43,7 @@ private:
     uint32_t mWaitPushThreads;
     uint32_t mWaitPopThreads;
 
-    bool mQuitPush;
-    pthread_t mQuitPushTid;
     std::vector<pthread_t> mQuitPushTids;
-    bool mQuitPop;
-    pthread_t mQuitPopTid;
     std::vector<pthread_t> mQuitPopTids;
 };
 

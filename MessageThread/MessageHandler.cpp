@@ -85,6 +85,6 @@ void MessageHandler::quit(pthread_t threadID)
 void MessageHandler::detach(pthread_t threadID)
 {
     if (mQueue) {
-        mQueue->detach(threadID);
+        mQueue->detachPush(threadID);
     }
 }

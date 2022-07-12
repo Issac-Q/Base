@@ -63,10 +63,12 @@ void TestThread::run()
 
 void TestThread::onStop()
 {
+    printf("onStop\n");
     myHandler->quit(threadID());
 }
 
 void TestThread::onStopped(pthread_t tid)
 {
+    printf("onStopped\n");
     myHandler->detach(tid);
 }

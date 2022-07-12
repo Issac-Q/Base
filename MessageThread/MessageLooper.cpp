@@ -77,6 +77,7 @@ void MessageLooper::loop()
             Message* msg = mQueue->popMessage();
             if (!msg) {
                 printf("loop quit\n");
+                mQueue->detachPop(mOwnerId);
                 return;
             }
             msg->mHandler->handleMessage(msg);
