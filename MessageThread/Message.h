@@ -18,7 +18,7 @@
 //将消息发给线程的消息队列,消息带有一个处理者,异步回调就调用到处理者handler的函数
 //为了更加解耦和使用简洁, 更进一步:将消息剥离出来,只与它最关心的处理者打交道
 //把异步调用的最核心两步发送和调用都放在handler里面实现
-//1. 继承handler实现自己的MyHandler, 根据messageId 实现处理消息函数
+//1. 继承Handler实现自己的MyHandler, 根据messageId 实现处理消息函数
 //2. msg = handler.obtainMessage()
 //3. myhandler.sendMessage()
 
@@ -26,7 +26,7 @@
 //5. 进一步线程和消息循环体(Looper)也应该分离,线程的函数体负责运行Looper的loop
 //6. 将handler绑定到消息循环体Looper,但不直接跟循环体打交道,而是得到Looper的消息队列,并和消息队列打交道
 //7. message->handler->messageQueue
-//8. thread->run->Looper.loop->msg.handler.handlerMessage
+//8. thread->run->Looper.loop->messageQueue->msg.handler.handlerMessage
 
 class MessageHandler;
 

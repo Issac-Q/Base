@@ -20,7 +20,7 @@ MessageHandler::MessageHandler(MessageLooper* looper)
 MessageHandler::~MessageHandler()
 {
     if (mQueue) {
-        mQueue.quitPush()
+        mQueue->quitPush(mOwnerId);
     }
 }
 
@@ -74,4 +74,11 @@ void MessageHandler::sendMessageDelayed(Message* msg, uint64_t delayMillis)
 void MessageHandler::handleMessage(Message* msg)
 {
     onHandleMessage(msg);
+}
+
+void MessageHandler::quit()
+{
+    if (mQueue) {
+        mQueue->quitPush(mOwnerId);
+    } 
 }

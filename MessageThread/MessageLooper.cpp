@@ -14,10 +14,10 @@ MessageLooper::MessageLooper()
 
 MessageLooper::MessageLooper(std::shared_ptr<MessageQueue>* queue)
 : mOwnerId(0)
-, mQueue()
+, mQueue(*queue)
 {
     printf("MessageLooper::MessageLooper\n");
-    setQueue(queue);
+    // setQueue(queue);
 }
 
 MessageLooper::~MessageLooper()

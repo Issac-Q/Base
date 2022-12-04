@@ -12,6 +12,14 @@
  **/
 class MessageQueue
 {
+// public:
+// class QuitBlock {
+// public:
+//     virtual void join() ;
+//     virtual void quit() = 0;
+// private:
+//     std::vector<pthread_t> mBlock
+// };
 public:
     MessageQueue();
     ~MessageQueue();
