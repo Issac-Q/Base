@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <unistd.h>
-//
-//
 
 //字符串和字符串数组的存储区域测试
 char *s3()
