@@ -55,6 +55,7 @@ void MessageQueue::pushMessage(Message* msg, uint64_t when)
     --mWaitPushThreads;
     //means quit push
     if (mQuitPush && mQuitPushTid == pthread_self()) {
+        mQuitPush = false;
         pthread_mutex_unlock(&mMutex);
         return;
     }
@@ -116,6 +117,8 @@ Message* MessageQueue::popMessage()
     Message* retMessage;
     //means quit pop
     if (mQuitPop && mQuitPopTid == pthread_self()) {
+        printf("pop Message NULL\n");
+        mQuitPop = false;
         retMessage = NULL;
         pthread_mutex_unlock(&mMutex);
         return retMessage;

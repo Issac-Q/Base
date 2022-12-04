@@ -34,6 +34,8 @@ public:
     void sendMessageDelayed(Message* msg, uint64_t delayMillis);
     void handleMessage(Message* msg);
 
+    void quit();
+
 protected:
     virtual void onHandleMessage(Message* msg) = 0;
 
